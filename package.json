@@ -1,0 +1,58 @@
+{
+  "name": "graphmap",
+  "productName": "GraphMap",
+  "version": "1.0.0",
+  "description": "Visual Embedding Intelligence & Local MCP Graph Memory Server",
+  "author": "duvanCodexx",
+  "homepage": "https://github.com/duvanCodexx/GraphMap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/duvanCodexx/GraphMap.git"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "electron .",
+    "mcp": "node mcp-server.cjs",
+    "build": "tsc && vite build && electron-builder && node scripts/compress-release.cjs",
+    "compress-release": "node scripts/compress-release.cjs",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@lancedb/lancedb": "^0.27.2",
+    "@stitches/react": "^1.2.8",
+    "apache-arrow": "^15.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-force-graph-2d": "^1.29.1",
+    "react-force-graph-3d": "^1.29.2",
+    "three": "^0.186.1",
+    "three-spritetext": "^1.10.0",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.5.0",
+    "electron": "^30.0.1",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
+    "vite-plugin-electron": "^0.28.6",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  },
+  "main": "dist-electron/main.js"
+}
