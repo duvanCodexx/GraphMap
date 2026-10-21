@@ -747,60 +747,102 @@ store_memory({
   }, [currentMcpServerPath])
 
 
-  // Aplicar física fluida de D3 al estilo Obsidian Graph View
+  // Aplicar física fluida de D3 al estilo Obsidian Graph View con expansión 10% y respiración cósmica asíncrona
   const applyFluidPhysics = useCallback(() => {
     const fg = fgRef.current
     if (!fg) return
     try {
-      // 1. Repel Force (Obsidian charge / repel con corte de distancia para máxima velocidad)
+      // 1. Repel Force (Obsidian charge / repel con corte de distancia ampliado 10%)
       const charge = fg.d3Force('charge')
       if (charge) {
         if (typeof charge.strength === 'function') {
-          charge.strength(isCompact ? -120 : -190)
+          charge.strength(isCompact ? -132 : -210) // 10% mayor repulsión (antes -120 : -190)
         }
         if (typeof charge.distanceMax === 'function') {
-          charge.distanceMax(isCompact ? 350 : 500)
+          charge.distanceMax(isCompact ? 385 : 550) // 10% mayor alcance (antes 350 : 500)
         }
         if (typeof charge.theta === 'function') {
           charge.theta(0.85) // Algoritmo Barnes-Hut rápido Obsidian
         }
       }
 
-      // 2. Center Force (Obsidian center / gravedad hacia el origen)
+      // 2. Center Force (Obsidian center / gravedad suave hacia el origen)
       const center = fg.d3Force('center')
       if (center && typeof center.strength === 'function') {
-        center.strength(isCompact ? 0.28 : 0.22)
+        center.strength(isCompact ? 0.25 : 0.20) // Más suave para permitir la expansión del 10%
       }
 
-      // 3. Link Force (Obsidian link attraction spring y longitudes de reposo)
+      // 3. Link Force (Longitudes de reposo incrementadas exactamente un 10%)
       const link = fg.d3Force('link')
       if (link) {
         if (typeof link.distance === 'function') {
           link.distance((l) => {
-            if (l.type === 'index→file') return isCompact ? 55 : 85
-            if (l.type === 'co-occurrence') return isCompact ? 40 : 65
-            if (l.type === 'file→chunk') return isCompact ? 25 : 38
-            if (l.type === 'chunk→chunk') return isCompact ? 18 : 28
-            if (l.type === 'semantic-mesh') return isCompact ? 30 : 45
-            return isCompact ? 28 : 42
+            if (l.type === 'index→file') return isCompact ? 61 : 94    // +10% (antes 55 : 85)
+            if (l.type === 'co-occurrence') return isCompact ? 44 : 72  // +10% (antes 40 : 65)
+            if (l.type === 'file→chunk') return isCompact ? 28 : 42     // +10% (antes 25 : 38)
+            if (l.type === 'chunk→chunk') return isCompact ? 20 : 31    // +10% (antes 18 : 28)
+            if (l.type === 'semantic-mesh') return isCompact ? 33 : 50  // +10% (antes 30 : 45)
+            return isCompact ? 31 : 46                                  // +10% (antes 28 : 42)
           })
         }
         if (typeof link.strength === 'function') {
           link.strength((l) => {
-            if (l.type === 'file→chunk') return 0.75
-            if (l.type === 'index→file') return 0.65
-            if (l.type === 'chunk→chunk') return 0.5
-            return 0.35 // co-occurrence y semantic-mesh
+            if (l.type === 'file→chunk') return 0.72
+            if (l.type === 'index→file') return 0.62
+            if (l.type === 'chunk→chunk') return 0.48
+            return 0.32 // co-occurrence y semantic-mesh
           })
         }
       }
 
-      // 4. Inercia y Enfriamiento Obsidian (Damping & Quick Equilibrium)
-      if (typeof fg.d3VelocityDecay === 'function') fg.d3VelocityDecay(0.4)
-      if (typeof fg.d3AlphaDecay === 'function') fg.d3AlphaDecay(0.035)
+      // 4. Fuerza de Respiración Orgánica Asíncrona (Alejamiento y Acercamiento Autónomo por Nodo)
+      fg.d3Force('breathing', () => {
+        const graphData = fg.graphData?.()
+        const nodes = graphData?.nodes || activeProjectGraph.nodes
+        if (!nodes || nodes.length <= 1) return
+        const t = performance.now() * 0.001
+
+        for (let i = 0; i < nodes.length; i++) {
+          const n = nodes[i]
+          if (n.kind === 'index') continue // El hub central permanece anclado como centro de gravedad estable
+
+          // Asignar parámetros únicos y no coordinados a cada nodo si no los tiene
+          if (n.__bFreq == null) {
+            let h = 0
+            const str = String(n.id || i)
+            for (let j = 0; j < str.length; j++) h = (h * 31 + str.charCodeAt(j)) | 0
+            // Frecuencia asíncrona única por nodo (ciclos no coordinados entre 4s y 8.5s)
+            n.__bFreq = 0.75 + (Math.abs(h % 80) / 100) * 0.8
+            // Desfase de fase completamente independiente
+            n.__bPhase = (Math.abs((h >> 3) % 100) / 100) * Math.PI * 2
+            // Amplitud propia (cada nodo toma una distancia única de alejamiento/acercamiento)
+            n.__bAmp = isCompact
+              ? 0.35 + (Math.abs((h >> 6) % 50) / 100) * 0.45
+              : 0.55 + (Math.abs((h >> 6) % 60) / 100) * 0.65
+          }
+
+          const x = n.x || 0
+          const y = n.y || 0
+          const z = n.z || 0
+          const len = Math.hypot(x, y, z) || 1
+
+          // Oscilación senoidal asíncrona: aleja (+) y acerca (-) independientemente
+          const wave = Math.sin(t * n.__bFreq + n.__bPhase)
+          const radial = wave * n.__bAmp * 0.075
+
+          n.vx = (n.vx || 0) + (x / len) * radial
+          n.vy = (n.vy || 0) + (y / len) * radial
+          n.vz = (n.vz || 0) + (z / len) * radial
+        }
+      })
+
+      // 5. Inercia Fluida y Target Alpha Constante para Mantener Viva la Respiración Cósmica
+      if (typeof fg.d3VelocityDecay === 'function') fg.d3VelocityDecay(0.35)
+      if (typeof fg.d3AlphaDecay === 'function') fg.d3AlphaDecay(0.018)
+      if (typeof fg.d3AlphaTarget === 'function') fg.d3AlphaTarget(0.012) // Mantiene la animación viva perpetuamente
       if (typeof fg.d3ReheatSimulation === 'function') fg.d3ReheatSimulation()
     } catch {}
-  }, [isCompact])
+  }, [isCompact, activeProjectGraph])
 
   // Re-ajustar física y encuadre fluido cuando se entra o sale de la vista 1/4
   useEffect(() => {
@@ -921,10 +963,12 @@ store_memory({
         updateProjectGraph(activeProject.id, resp, q)
 
         if (fgRef.current) {
+          applyFluidPhysics()
           try {
-            fgRef.current.d3VelocityDecay?.(0.4)
+            fgRef.current.d3VelocityDecay?.(0.35)
             fgRef.current.d3Alpha?.(0.65)
-            fgRef.current.d3AlphaDecay?.(0.035)
+            fgRef.current.d3AlphaDecay?.(0.018)
+            fgRef.current.d3AlphaTarget?.(0.012)
             fgRef.current.d3ReheatSimulation?.()
           } catch {}
 
@@ -1201,9 +1245,10 @@ store_memory({
         if (fgRef.current) {
           applyFluidPhysics()
           try {
-            fgRef.current.d3VelocityDecay?.(0.4)
+            fgRef.current.d3VelocityDecay?.(0.35)
             fgRef.current.d3Alpha?.(0.65)
-            fgRef.current.d3AlphaDecay?.(0.035)
+            fgRef.current.d3AlphaDecay?.(0.018)
+            fgRef.current.d3AlphaTarget?.(0.012)
             fgRef.current.d3ReheatSimulation?.()
           } catch {}
 
@@ -1797,10 +1842,10 @@ store_memory({
             showNavInfo={false}
             nodeRelSize={3}
             nodeThreeObjectExtend={false}
-            warmupTicks={50}
-            cooldownTicks={100}
-            d3VelocityDecay={0.4}
-            d3AlphaDecay={0.035}
+            warmupTicks={40}
+            cooldownTicks={Infinity}
+            d3VelocityDecay={0.35}
+            d3AlphaDecay={0.018}
             rendererConfig={{ powerPreference: 'high-performance', antialias: true, alpha: true }}
             nodeThreeObject={(node) => {
               const kind = node.kind
