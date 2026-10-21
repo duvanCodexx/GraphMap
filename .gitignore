@@ -12,6 +12,7 @@ dist
 dist-ssr
 /dist-electron
 /release
+/local-installer
 *.exe
 *.zip
 .zip
