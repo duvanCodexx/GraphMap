@@ -28,6 +28,7 @@
     "artifactName": "${productName}-Setup-${version}-x64.${ext}"
   },
   "nsis": {
+    "include": "build/installer.nsh",
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,

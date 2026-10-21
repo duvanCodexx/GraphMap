@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, screen, Menu, Tray, nativeImage, Notification } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, screen, Menu, Tray, nativeImage, Notification, session } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -84,6 +84,22 @@ function updateTrayMenu() {
       label: 'Ocultar a la bandeja',
       click: () => {
         win?.hide()
+      },
+    },
+    {
+      label: 'Limpiar caché y recargar',
+      click: async () => {
+        try {
+          await session.defaultSession.clearCache()
+          await session.defaultSession.clearStorageData({
+            storages: ['cachestorage', 'shadercache'],
+          })
+          if (win) {
+            win.webContents.reloadIgnoringCache()
+          }
+        } catch (e) {
+          console.error('[Electron] Error al limpiar caché:', e)
+        }
       },
     },
     { type: 'separator' },
@@ -264,6 +280,21 @@ function registerIpcHandlers() {
     return { ok: true }
   })
 
+  ipcMain.handle('app:clearCache', async () => {
+    try {
+      await session.defaultSession.clearCache()
+      await session.defaultSession.clearStorageData({
+        storages: ['cachestorage', 'shadercache'],
+      })
+      if (win) {
+        win.webContents.reloadIgnoringCache()
+      }
+      return { ok: true }
+    } catch (err: any) {
+      return { ok: false, error: err?.message || String(err) }
+    }
+  })
+
   ipcMain.handle('window:isQuarterScreen', async () => {
     if (!win) return { isQuarter: false }
     const display = screen.getPrimaryDisplay()
@@ -436,7 +467,10 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  try {
+    await session.defaultSession.clearCache()
+  } catch {}
   Menu.setApplicationMenu(null)
   startBackendServer()
     .then((s) => {

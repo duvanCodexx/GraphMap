@@ -34,5 +34,6 @@ interface Window {
     setRunInBackground: (enabled: boolean) => Promise<{ runInBackground: boolean }>
     setOpenAtLogin: (enabled: boolean) => Promise<{ openAtLogin: boolean }>
     quitApp: () => Promise<{ ok: boolean }>
+    clearCache: () => Promise<{ ok: boolean; error?: string }>
   }
 }

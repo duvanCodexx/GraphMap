@@ -83,6 +83,9 @@ const api = {
   quitApp: async () => {
     return (await ipcRenderer.invoke('app:quit')) as { ok: boolean }
   },
+  clearCache: async () => {
+    return (await ipcRenderer.invoke('app:clearCache')) as { ok: boolean; error?: string }
+  },
 }
 
 // --------- Expose some API to the Renderer process ---------
