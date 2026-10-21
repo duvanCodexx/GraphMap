@@ -35,10 +35,12 @@ if (!gotTheLock) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    if (win) {
+    if (win && !win.isDestroyed()) {
       if (win.isMinimized()) win.restore()
       win.show()
       win.focus()
+    } else {
+      createWindow()
     }
   })
 }
@@ -396,6 +398,22 @@ function createWindow() {
       contextIsolation: true,
     },
     show: true,
+    backgroundColor: '#0d1515',
+  })
+
+  // Atajo para abrir consola de desarrollador con F12 o Ctrl+Shift+I
+  win.webContents.on('before-input-event', (_event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+      win?.webContents.toggleDevTools()
+    }
+  })
+
+  // Capturar logs y errores del Renderer en archivo persistente
+  win.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    try {
+      const logFile = path.join(app.getPath('userData'), 'app.log')
+      fs.appendFileSync(logFile, `[Renderer L${level}] ${message} (${sourceId}:${line})\n`, 'utf8')
+    } catch {}
   })
 
   // Purga definitiva de barra de menú nativa
@@ -439,7 +457,7 @@ function createWindow() {
     win.loadURL(`${VITE_DEV_SERVER_URL}?backendUrl=${encodeURIComponent(targetBackendUrl)}`)
   } else {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'), {
-      query: { backendUrl: targetBackendUrl },
+      search: `backendUrl=${encodeURIComponent(targetBackendUrl)}`,
     })
   }
 }

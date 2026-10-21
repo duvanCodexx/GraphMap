@@ -1,9 +1,13 @@
 ; ==============================================================================
 ; GraphMap - Script de personalización de instalador NSIS
-; Limpieza de caché de Chromium, shaders y código compilado antes de la instalación
+; Limpieza de procesos en segundo plano y purga de caché antes de la instalación
 ; ==============================================================================
 
 !macro customInit
+  ; Cerrar de forma segura y completa cualquier proceso residual o en segundo plano (System Tray)
+  nsExec::Exec 'taskkill /F /IM GraphMap.exe /T'
+  Sleep 500
+
   ; Limpieza previa al inicio del instalador
   RMDir /r "$APPDATA\GraphMap\Cache"
   RMDir /r "$APPDATA\GraphMap\Code Cache"
@@ -28,7 +32,11 @@
 !macroend
 
 !macro customInstall
-  ; Limpieza durante la instalación cuando los procesos previos ya han terminado
+  ; Asegurar que los procesos estén completamente cerrados durante la extracción
+  nsExec::Exec 'taskkill /F /IM GraphMap.exe /T'
+  Sleep 500
+
+  ; Limpieza durante la instalación
   DetailPrint "Limpiando cache previa de interfaz y shaders de GraphMap..."
   RMDir /r "$APPDATA\GraphMap\Cache"
   RMDir /r "$APPDATA\GraphMap\Code Cache"

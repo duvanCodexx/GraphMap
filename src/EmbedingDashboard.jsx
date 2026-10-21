@@ -797,43 +797,45 @@ store_memory({
 
       // 4. Fuerza de Respiración Orgánica Asíncrona (Alejamiento y Acercamiento Autónomo por Nodo)
       fg.d3Force('breathing', () => {
-        const graphData = fg.graphData?.()
-        const nodes = graphData?.nodes || activeProjectGraph.nodes
-        if (!nodes || nodes.length <= 1) return
-        const t = performance.now() * 0.001
+        try {
+          const graphData = fg.graphData?.()
+          const nodes = graphData?.nodes || activeProjectGraph?.nodes || []
+          if (!nodes || nodes.length <= 1) return
+          const t = performance.now() * 0.001
 
-        for (let i = 0; i < nodes.length; i++) {
-          const n = nodes[i]
-          if (n.kind === 'index') continue // El hub central permanece anclado como centro de gravedad estable
+          for (let i = 0; i < nodes.length; i++) {
+            const n = nodes[i]
+            if (!n || n.kind === 'index') continue // El hub central permanece anclado como centro de gravedad estable
 
-          // Asignar parámetros únicos y no coordinados a cada nodo si no los tiene
-          if (n.__bFreq == null) {
-            let h = 0
-            const str = String(n.id || i)
-            for (let j = 0; j < str.length; j++) h = (h * 31 + str.charCodeAt(j)) | 0
-            // Frecuencia asíncrona única por nodo (ciclos no coordinados entre 4s y 8.5s)
-            n.__bFreq = 0.75 + (Math.abs(h % 80) / 100) * 0.8
-            // Desfase de fase completamente independiente
-            n.__bPhase = (Math.abs((h >> 3) % 100) / 100) * Math.PI * 2
-            // Amplitud propia (cada nodo toma una distancia única de alejamiento/acercamiento)
-            n.__bAmp = isCompact
-              ? 0.35 + (Math.abs((h >> 6) % 50) / 100) * 0.45
-              : 0.55 + (Math.abs((h >> 6) % 60) / 100) * 0.65
+            // Asignar parámetros únicos y no coordinados a cada nodo si no los tiene
+            if (n.__bFreq == null) {
+              let h = 0
+              const str = String(n.id || i)
+              for (let j = 0; j < str.length; j++) h = (h * 31 + str.charCodeAt(j)) | 0
+              // Frecuencia asíncrona única por nodo (ciclos no coordinados entre 4s y 8.5s)
+              n.__bFreq = 0.75 + (Math.abs(h % 80) / 100) * 0.8
+              // Desfase de fase completamente independiente
+              n.__bPhase = (Math.abs((h >> 3) % 100) / 100) * Math.PI * 2
+              // Amplitud propia (cada nodo toma una distancia única de alejamiento/acercamiento)
+              n.__bAmp = isCompact
+                ? 0.35 + (Math.abs((h >> 6) % 50) / 100) * 0.45
+                : 0.55 + (Math.abs((h >> 6) % 60) / 100) * 0.65
+            }
+
+            const x = Number(n.x) || 0
+            const y = Number(n.y) || 0
+            const z = Number(n.z) || 0
+            const len = Math.hypot(x, y, z) || 1
+
+            // Oscilación senoidal asíncrona: aleja (+) y acerca (-) independientemente
+            const wave = Math.sin(t * n.__bFreq + n.__bPhase)
+            const radial = wave * n.__bAmp * 0.075
+
+            n.vx = (Number(n.vx) || 0) + (x / len) * radial
+            n.vy = (Number(n.vy) || 0) + (y / len) * radial
+            n.vz = (Number(n.vz) || 0) + (z / len) * radial
           }
-
-          const x = n.x || 0
-          const y = n.y || 0
-          const z = n.z || 0
-          const len = Math.hypot(x, y, z) || 1
-
-          // Oscilación senoidal asíncrona: aleja (+) y acerca (-) independientemente
-          const wave = Math.sin(t * n.__bFreq + n.__bPhase)
-          const radial = wave * n.__bAmp * 0.075
-
-          n.vx = (n.vx || 0) + (x / len) * radial
-          n.vy = (n.vy || 0) + (y / len) * radial
-          n.vz = (n.vz || 0) + (z / len) * radial
-        }
+        } catch {}
       })
 
       // 5. Inercia Fluida y Target Alpha Constante para Mantener Viva la Respiración Cósmica
@@ -842,7 +844,7 @@ store_memory({
       if (typeof fg.d3AlphaTarget === 'function') fg.d3AlphaTarget(0.012) // Mantiene la animación viva perpetuamente
       if (typeof fg.d3ReheatSimulation === 'function') fg.d3ReheatSimulation()
     } catch {}
-  }, [isCompact, activeProjectGraph])
+  }, [isCompact, activeProjectGraph?.nodes?.length])
 
   // Re-ajustar física y encuadre fluido cuando se entra o sale de la vista 1/4
   useEffect(() => {
