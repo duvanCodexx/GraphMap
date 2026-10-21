@@ -15,7 +15,7 @@
     "dev": "vite",
     "start": "electron .",
     "mcp": "node mcp-server.cjs",
-    "build": "tsc && vite build && electron-builder && node scripts/compress-release.cjs",
+    "build": "tsc && vite build && electron-builder --publish never && node scripts/compress-release.cjs",
     "compress-release": "node scripts/compress-release.cjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
