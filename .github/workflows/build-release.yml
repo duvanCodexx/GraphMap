@@ -39,7 +39,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          if [ "${{ matrix.platform }}" = "macos" ]; then
+            echo "Installing macOS LanceDB native bindings for arm64 and x64..."
+            npm install --no-save @lancedb/lancedb-darwin-arm64@0.27.2 @lancedb/lancedb-darwin-x64@0.27.2
+          fi
+        shell: bash
 
       - name: Build and Package Electron App
         run: npm run build
