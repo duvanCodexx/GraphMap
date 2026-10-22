@@ -307,6 +307,12 @@ export default function EmbedingDashboard() {
     return projects.find((p) => p.id === activeProjectId) || projects[0]
   }, [projects, activeProjectId])
 
+  // Obtener datos del grafo del proyecto actualmente seleccionado (declarado antes de su uso en físicas D3)
+  const activeProjectGraph = useMemo(() => {
+    if (!activeProject) return { nodes: [], links: [] }
+    return graphsByProject[activeProject.id]?.graphData || { nodes: [], links: [] }
+  }, [activeProject, graphsByProject])
+
   const activeProjectIdRef = useRef(activeProjectId)
   useEffect(() => {
     activeProjectIdRef.current = activeProjectId
@@ -1165,12 +1171,6 @@ store_memory({
     const timer = setTimeout(() => setAgentInteraction(null), 14000)
     return () => clearTimeout(timer)
   }, [agentInteraction])
-
-  // Obtener datos del grafo del proyecto actualmente seleccionado
-  const activeProjectGraph = useMemo(() => {
-    if (!activeProject) return { nodes: [], links: [] }
-    return graphsByProject[activeProject.id]?.graphData || { nodes: [], links: [] }
-  }, [activeProject, graphsByProject])
 
   // Carga inicial automática del grafo para el proyecto activo si aún no tiene datos cargados
   useEffect(() => {
