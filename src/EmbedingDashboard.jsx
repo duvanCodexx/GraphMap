@@ -847,6 +847,7 @@ store_memory({
       // 5. Inercia Fluida y Target Alpha Constante para Mantener Viva la Respiración Cósmica
       if (typeof fg.d3VelocityDecay === 'function') fg.d3VelocityDecay(0.35)
       if (typeof fg.d3AlphaDecay === 'function') fg.d3AlphaDecay(0.018)
+      if (typeof fg.d3AlphaMin === 'function') fg.d3AlphaMin(0)
       if (typeof fg.d3AlphaTarget === 'function') fg.d3AlphaTarget(0.012) // Mantiene la animación viva perpetuamente
       if (typeof fg.d3ReheatSimulation === 'function') fg.d3ReheatSimulation()
     } catch {}
@@ -1846,8 +1847,15 @@ store_memory({
             nodeThreeObjectExtend={false}
             warmupTicks={40}
             cooldownTicks={Infinity}
+            cooldownTime={Infinity}
+            d3AlphaMin={0}
             d3VelocityDecay={0.35}
             d3AlphaDecay={0.018}
+            onEngineStop={() => {
+              try {
+                fgRef.current?.d3ReheatSimulation?.()
+              } catch {}
+            }}
             rendererConfig={{ powerPreference: 'high-performance', antialias: true, alpha: true }}
             nodeThreeObject={(node) => {
               const kind = node.kind
