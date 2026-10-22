@@ -10,7 +10,7 @@ if (!fs.existsSync(releaseDir)) {
 
 const exeFiles = fs.readdirSync(releaseDir).filter((file) => file.endsWith('.exe'))
 if (exeFiles.length === 0) {
-  console.log('[compress-release] No hay archivos .exe para comprimir en release.')
+  console.log(`[compress-release] No hay archivos .exe para comprimir en release (plataforma: ${process.platform}).`)
   process.exit(0)
 }
 
@@ -21,9 +21,13 @@ for (const exeFile of exeFiles) {
 
   console.log(`[compress-release] Comprimiendo ${exeFile} -> ${zipName}...`)
   try {
-    execSync(`powershell -NoProfile -Command "Compress-Archive -Path '${exePath}' -DestinationPath '${zipPath}' -Force"`, {
-      stdio: 'inherit',
-    })
+    if (process.platform === 'win32') {
+      execSync(`powershell -NoProfile -Command "Compress-Archive -Path '${exePath}' -DestinationPath '${zipPath}' -Force"`, {
+        stdio: 'inherit',
+      })
+    } else {
+      execSync(`zip -j -q "${zipPath}" "${exePath}"`, { stdio: 'inherit' })
+    }
     fs.unlinkSync(exePath)
     console.log(`[compress-release] ✓ ${zipName} creado exitosamente y ${exeFile} eliminado de release.`)
   } catch (err) {

@@ -150,7 +150,11 @@ function updateTrayMenu() {
 function createTray() {
   if (tray) return
   const iconPath = getTrayIconPath()
-  const trayImg = nativeImage.createFromPath(iconPath)
+  let trayImg = nativeImage.createFromPath(iconPath)
+  if (process.platform === 'darwin') {
+    trayImg = trayImg.resize({ width: 18, height: 18 })
+    trayImg.setTemplateImage(true)
+  }
   tray = new Tray(trayImg)
 
   tray.setToolTip(`GraphMap — Motor de Embeddings & MCP (${backend?.url || 'Puerto 8001'})`)
@@ -392,6 +396,8 @@ function createWindow() {
     autoHideMenuBar: true,
     title: 'GraphMap — Semantic Code Search & MCP',
     icon: iconPath,
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    trafficLightPosition: process.platform === 'darwin' ? { x: 14, y: 14 } : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false,
@@ -489,7 +495,64 @@ app.whenReady().then(async () => {
   try {
     await session.defaultSession.clearCache()
   } catch {}
-  Menu.setApplicationMenu(null)
+  if (process.platform === 'darwin') {
+    const template: Electron.MenuItemConstructorOptions[] = [
+      {
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' },
+        ],
+      },
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' },
+        ],
+      },
+      {
+        label: 'View',
+        submenu: [
+          { role: 'reload' },
+          { role: 'forceReload' },
+          { role: 'toggleDevTools' },
+          { type: 'separator' },
+          { role: 'resetZoom' },
+          { role: 'zoomIn' },
+          { role: 'zoomOut' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' },
+        ],
+      },
+      {
+        label: 'Window',
+        submenu: [
+          { role: 'minimize' },
+          { role: 'zoom' },
+          { type: 'separator' },
+          { role: 'front' },
+          { type: 'separator' },
+          { role: 'window' },
+        ],
+      },
+    ]
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  } else {
+    Menu.setApplicationMenu(null)
+  }
   startBackendServer()
     .then((s) => {
       backend = s

@@ -7,16 +7,26 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name to release (ej: v1.0.0)'
+        description: 'Tag name to release (ej: v1.0.1)'
         required: false
-        default: 'v1.0.0'
+        default: 'v1.0.1'
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -36,10 +46,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish Release Assets
+      - name: Publish Release Assets (Windows)
+        if: matrix.platform == 'windows'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name != 'main' && github.ref_name || inputs.tag_name || 'v1.0.0' }}
+          tag_name: ${{ github.ref_name != 'main' && github.ref_name || inputs.tag_name || 'v1.0.1' }}
           files: release/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Release Assets (macOS)
+        if: matrix.platform == 'macos'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name != 'main' && github.ref_name || inputs.tag_name || 'v1.0.1' }}
+          files: |
+            release/*.dmg
+            release/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,5 @@
 import path from 'node:path'
+import os from 'node:os'
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { localEmbeddings } from './server'
@@ -32,10 +33,24 @@ type MemoryStoreFile = {
 let cachedStore: MemoryStoreFile | null = null
 
 function getStoragePath(): string {
-  if (process.env.APPDATA) {
-    return path.join(process.env.APPDATA, 'embeding-electron', 'agent_memory.json')
+  let baseDir = ''
+  try {
+    const electron = require('electron')
+    if (electron?.app && typeof electron.app.getPath === 'function') {
+      baseDir = electron.app.getPath('userData')
+    }
+  } catch {}
+
+  if (!baseDir) {
+    if (process.env.APPDATA) {
+      baseDir = path.join(process.env.APPDATA, 'GraphMap')
+    } else if (process.platform === 'darwin') {
+      baseDir = path.join(os.homedir(), 'Library', 'Application Support', 'GraphMap')
+    } else {
+      baseDir = path.join(os.homedir(), '.config', 'GraphMap')
+    }
   }
-  return path.join(process.cwd(), 'agent_memory.json')
+  return path.join(baseDir, 'agent_memory.json')
 }
 
 async function ensureDir(p: string) {
