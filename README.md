@@ -4,6 +4,7 @@
 ### Visual Embedding Intelligence, Neural Graph Exploration & MCP Memory Server for AI Coding Agents
 
 [![Windows x64](https://img.shields.io/badge/Platform-Windows%20x64-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duvanCodexx/GraphMap/releases)
+[![macOS Universal](https://img.shields.io/badge/Platform-macOS%20ARM64%20%2F%20x64-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/duvanCodexx/GraphMap/releases)
 [![MCP Protocol](https://img.shields.io/badge/MCP-JSON--RPC%202.0-8A2BE2?style=for-the-badge&logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![Electron](https://img.shields.io/badge/Electron-30.5.1-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![Vector Store](https://img.shields.io/badge/LanceDB-Vector%20DB-FF6B6B?style=for-the-badge&logo=apache-arrow&logoColor=white)](https://lancedb.com/)
@@ -54,18 +55,32 @@
 
 ---
 
-## 📥 Windows Installer & Quick Start
+## 📥 Installers & Quick Start
 
-### Direct Download
-The official 64-bit installer for Windows 10/11 is published and distributed via official GitHub Releases:
+### Direct Downloads
+Official installers for Windows and macOS (Intel & Apple Silicon ARM64) are available on GitHub Releases:
 
-👉 **[Download Latest GraphMap-Setup from Releases](https://github.com/duvanCodexx/GraphMap/releases)**
+👉 **[Download Latest GraphMap Releases](https://github.com/duvanCodexx/GraphMap/releases)**
 
-### Installation Steps
-1. Download `GraphMap-Setup-1.0.0-x64.exe`.
-2. Run the installer. Choose your preferred installation directory.
-3. The installer creates Start Menu shortcuts and a Desktop launcher.
-4. Launch **GraphMap**. The local vector server will automatically initialize on port `8001`.
+| Operating System | Package | Architecture |
+|---|---|---|
+| **Windows 10 / 11** | `GraphMap-Setup-1.0.1-x64.zip` | 64-bit Intel / AMD |
+| **macOS (Apple Silicon)** | `GraphMap-1.0.1-mac-arm64.dmg` / `.zip` | M1 / M2 / M3 / M4 / ARM64 |
+| **macOS (Intel)** | `GraphMap-1.0.1-mac-x64.dmg` / `.zip` | Intel x64 |
+
+### macOS First Launch (Gatekeeper Notice)
+Since GraphMap is an open-source project without a paid corporate Apple Developer certificate, macOS Gatekeeper may display a dialog stating *"Apple could not verify GraphMap..."*.
+
+To authorize and open it in 2 clicks:
+1. Drag **GraphMap** into your **Applications** folder.
+2. In Finder, open **Applications**, **Right-Click** (or `Control` + Click) on **GraphMap** and select **Open** (`Abrir`).
+3. Click the **Open** (`Abrir`) button in the confirmation prompt. macOS will remember your choice and you can open it normally thereafter.
+4. *(Alternative via Terminal)*: Run `xattr -cr /Applications/GraphMap.app` to remove the quarantine attribute.
+
+### Windows Installation Steps
+1. Download `GraphMap-Setup-1.0.1-x64.zip` and extract the installer.
+2. Run the setup executable. Choose your installation folder.
+3. The installer automatically purges old UI cache and creates Desktop / Start Menu shortcuts.
 
 ---
 
